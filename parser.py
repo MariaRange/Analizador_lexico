@@ -1,50 +1,63 @@
 import ply.yacc as yacc
 from ejemplo import tokens 
 
-def p_expression_extra(p):
-    'expression : expression EXTRA term'
-    p[0] = p[1] + p[3]
 
-def p_expression_quit(p):
-    'expression : expression QUIT term'
-    p[0] = p[1] - p[3]
-    
-def p_expression_numeric(p):
-    'expression : expression NUMERIC'
-    p[0] = p[1]
+names = { }
 
-def p_term_hour(p):
-    'term : term HOUR factor'
-    p[0] = p[1] * p[3]
+def p_statement_assign(t):
+    'statement : KEY EQUAL expression'
+    names[t[1]] = t[3]
 
-def p_term_entre(p):
-     'term : term ENTRE factor'
-     p[0] = p[1] / p[3]
- 
-def p_term_factor(p):
-    'term : factor'
-    p[0] = p[1]
- 
-def p_factor_numeric(p):
-    'factor : NUMERIC'
-    p[0] = p[1]
+def p_statement_expr(t):
+    'statement : expression'
+    print(t[1])
 
-def p_factor_expr(p):
-     'factor : LEFT expression RIGHT'
-     p[0] = p[2]
- 
- # Error rule for syntax errors
-def p_error(p):
-    print("Error sintactico!")
+def p_expression_binop(t):
+    '''expression : expression EXTRA expression
+                  | expression QUIT expression
+                  | expression HOUR expression
+                  | expression ENTRE expression
+                  | expression ELEV expression
+                  | expression MAQ expression
+                  | expression MEQ expression
+                  | expression MAI expression
+                  | expression MEI expression
+                  | expression COMPARE expression'''
+    if t[2] == '+'  : t[0] = t[1] + t[3]
+    elif t[2] == '-': t[0] = t[1] - t[3]
+    elif t[2] == '*': t[0] = t[1] * t[3]
+    elif t[2] == '/': t[0] = t[1] / t[3]
+    elif t[2] == '<': t[0] = t[1] < t[3]
+    elif t[2] == '>': t[0] = t[1] > t[3]
+    elif t[2] == '<=': t[0] = t[1] <= t[3]
+    elif t[2] == '>=': t[0] = t[1] >= t[3]
+    elif t[2] == '==': t[0] = t[1] == t[3]
+
+def p_expression_group(t):
+    'expression : LEFT expression RIGHT'
+    t[0] = t[2]
+
+def p_expression_number(t):
+    'expression : NUMERIC'
+    t[0] = t[1]
+
+def p_expression_name(t):
+    'expression : KEY'
+    try:
+        t[0] = names[t[1]]
+    except LookupError:
+        print(f"No se encuentra: {t[1]}")
+        t[0] = 0
+
+def p_error(t):
+    print(f'Error sintactico: {t[1]}')
 
 parser = yacc.yacc()
 
 while True:
-   try:
-       s = input('calc > ')
-   except EOFError:
-       break
-   if not s: continue
-   result = parser.parse(s)
-   print(result)
+    try:
+        s = input('calc > ')
+    except EOFError:
+        break
+    parser.parse(s)
    
