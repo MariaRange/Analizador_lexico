@@ -2,6 +2,7 @@ import ply.yacc as yacc
 from ejemplo import tokens 
 
 
+
 names = { }
 
 def p_statement_assign(t):
